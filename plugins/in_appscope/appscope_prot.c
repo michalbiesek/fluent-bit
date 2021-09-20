@@ -109,7 +109,7 @@ int appscope_prot_process(struct appscope_conn *conn)
         else {
             flb_plg_warn(ctx->ins, "error parsing log message with parser '%s'",
                          ctx->parser->name);
-            flb_plg_debug(ctx->ins, "unparsed log message: %.*s", len, p);
+            flb_plg_warn(ctx->ins, "unparsed log message: %.*s", len, p);
         }
 
         conn->buf_parsed += len + 1;

@@ -74,7 +74,7 @@ static void cb_tcp_flush(const void *data, size_t bytes,
                       u->tcp_host, u->tcp_port);
         FLB_OUTPUT_RETURN(FLB_RETRY);
     }
-
+    flb_plg_debug(ctx->ins, "\tcb_tcp_flush start write");
     if (ctx->out_format == FLB_PACK_JSON_FORMAT_NONE) {
         ret = flb_io_net_write(u_conn, data, bytes, &bytes_sent);
     }
@@ -91,6 +91,7 @@ static void cb_tcp_flush(const void *data, size_t bytes,
         ret = flb_io_net_write(u_conn, json, flb_sds_len(json), &bytes_sent);
         flb_sds_destroy(json);
     }
+    flb_plg_debug(ctx->ins, "\tcb_tcp_flush write finished");
 
     if (ret == -1) {
         flb_errno();
@@ -98,6 +99,7 @@ static void cb_tcp_flush(const void *data, size_t bytes,
         FLB_OUTPUT_RETURN(FLB_RETRY);
     }
 
+    flb_plg_debug(ctx->ins, "\t\tcb_tcp_flush before conn_release u(%p) ka_count(%d)", ctx->u, u_conn->ka_count);
     flb_upstream_conn_release(u_conn);
     FLB_OUTPUT_RETURN(FLB_OK);
 }

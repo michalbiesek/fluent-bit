@@ -609,6 +609,7 @@ struct flb_upstream_conn *flb_upstream_conn_get(struct flb_upstream *u)
 
     /* On non Keepalive mode, always create a new TCP connection */
     if (u->net.keepalive == FLB_FALSE) {
+        flb_trace("[upstream] keepalive==FLB_FALSE -> create_conn");
         return create_conn(u);
     }
 
@@ -663,6 +664,7 @@ struct flb_upstream_conn *flb_upstream_conn_get(struct flb_upstream *u)
 
     /* No keepalive connection available, create a new one */
     if (!conn) {
+        flb_debug("[upstream] keepalive ==TRUE NULL connection available -> create_conn");
         conn = create_conn(u);
     }
 
@@ -692,7 +694,7 @@ int flb_upstream_conn_release(struct flb_upstream_conn *conn)
     struct flb_upstream_queue *uq;
 
     uq = flb_upstream_queue_get(u);
-
+    flb_debug("[upstream] flb_upstream_conn_release start Keppalive %d Recycle %d fd %d",conn->u->net.keepalive, conn->recycle, conn->fd);
     /* If this is a valid KA connection just recycle */
     if (conn->u->net.keepalive == FLB_TRUE && conn->recycle == FLB_TRUE && conn->fd > -1) {
         /*

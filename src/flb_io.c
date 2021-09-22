@@ -346,22 +346,26 @@ int flb_io_net_write(struct flb_upstream_conn *u_conn, const void *data,
     struct flb_upstream *u = u_conn->u;
     struct flb_coro *coro = flb_coro_get();
 
-    flb_trace("[io coro=%p] [net_write] trying %zd bytes", coro, len);
+    flb_debug("[io coro=%p] [net_write] trying %zd bytes", coro, len);
 
     if (!u_conn->tls_session) {
         if (u->flags & FLB_IO_ASYNC) {
+            flb_debug("[io coro=%p] net_io_write_async",coro);
             ret = net_io_write_async(coro, u_conn, data, len, out_len);
         }
         else {
+            flb_debug("[io coro=%p] net_io_write",coro);
             ret = net_io_write(u_conn, data, len, out_len);
         }
     }
 #ifdef FLB_HAVE_TLS
     else if (u->flags & FLB_IO_TLS) {
         if (u->flags & FLB_IO_ASYNC) {
+            flb_debug("[io coro=%p] flb_tls_net_write_async",coro);
             ret = flb_tls_net_write_async(coro, u_conn, data, len, out_len);
         }
         else {
+            flb_debug("[io coro=%p] flb_tls_net_write",coro);
             ret = flb_tls_net_write(u_conn, data, len, out_len);
         }
     }
@@ -373,7 +377,7 @@ int flb_io_net_write(struct flb_upstream_conn *u_conn, const void *data,
         u_conn->event.fd = -1;
     }
 
-    flb_trace("[io coro=%p] [net_write] ret=%i total=%lu/%lu",
+    flb_debug("[io coro=%p] [net_write] ret=%i total=%lu/%lu",
               coro, ret, *out_len, len);
     return ret;
 }

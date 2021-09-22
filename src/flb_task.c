@@ -249,7 +249,7 @@ static struct flb_task *task_alloc(struct flb_config *config)
     }
     map_set_task_id(task_id, task, config);
 
-    flb_trace("[task %p] created (id=%i)", task, task_id);
+    flb_debug("[task %p] task_alloc created (id=%i) (config=%p)", task, task_id, config);
 
     /* Initialize minimum variables */
     task->id        = task_id;
@@ -342,6 +342,7 @@ struct flb_task *flb_task_create(uint64_t ref_id,
                                  struct flb_config *config,
                                  int *err)
 {
+    flb_debug("[task] flb_task_create called.");
     int count = 0;
     struct flb_task *task;
     struct flb_task_route *route;

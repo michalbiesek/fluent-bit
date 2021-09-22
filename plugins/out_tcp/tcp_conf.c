@@ -78,6 +78,7 @@ struct flb_out_tcp *flb_tcp_conf_create(struct flb_output_instance *ins,
         flb_free(ctx);
         return NULL;
     }
+    flb_plg_debug(ctx->ins, "Upstream created host name %s host port %d", ins->host.name, ins->host.port);
 
     /* Output format */
     ctx->out_format = FLB_PACK_JSON_FORMAT_NONE;
@@ -118,6 +119,7 @@ struct flb_out_tcp *flb_tcp_conf_create(struct flb_output_instance *ins,
     }
 
     ctx->u = upstream;
+    flb_plg_debug(ctx->ins, "Upstream set host name %s host port %d", ins->host.name, ins->host.port);
     flb_output_upstream_set(ctx->u, ins);
 
     ctx->host = ins->host.name;

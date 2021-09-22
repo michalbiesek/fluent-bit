@@ -609,6 +609,7 @@ struct flb_upstream_conn *flb_upstream_conn_get(struct flb_upstream *u)
 
     /* On non Keepalive mode, always create a new TCP connection */
     if (u->net.keepalive == FLB_FALSE) {
+        flb_debug("[upstream] keepalive==FLB_FALSE -> create_conn");
         return create_conn(u);
     }
 
@@ -664,6 +665,7 @@ struct flb_upstream_conn *flb_upstream_conn_get(struct flb_upstream *u)
     /* No keepalive connection available, create a new one */
     if (!conn) {
         conn = create_conn(u);
+        flb_debug("[upstream] Create_conn with FD %d", conn->fd);
     }
 
     return conn;

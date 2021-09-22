@@ -182,6 +182,7 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
     struct flb_upstream *u = u_conn->u;
 
  retry:
+    flb_debug("net_io_write_async start retry: total(%zu) bytes(%zu) len(%zu)", total,bytes,len);
     error = 0;
 
     if (len - total > 524288) {
@@ -192,16 +193,16 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
     }
     bytes = send(u_conn->fd, (char *) data + total, to_send, 0);
 
-#ifdef FLB_HAVE_TRACE
+// #ifdef FLB_HAVE_TRACE
     if (bytes > 0) {
-        flb_trace("[io coro=%p] [fd %i] write_async(2)=%d (%lu/%lu)",
+        flb_debug("[io coro=%p] [fd %i] write_async(2)=%d (%lu/%lu)",
                   co, u_conn->fd, bytes, total + bytes, len);
     }
     else {
-        flb_trace("[io coro=%p] [fd %i] write_async(2)=%d (%lu/%lu)",
+        flb_debug("[io coro=%p] [fd %i] write_async(2)=%d (%lu/%lu)",
                   co, u_conn->fd, bytes, total, len);
     }
-#endif
+// #endif
 
     if (bytes == -1) {
         if (FLB_WOULDBLOCK()) {
@@ -211,6 +212,7 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
                                FLB_ENGINE_EV_THREAD,
                                MK_EVENT_WRITE, &u_conn->event);
             if (ret == -1) {
+                flb_debug("net_io_write_async: mk_event_add failed return -1");
                 /*
                  * If we failed here there no much that we can do, just
                  * let the caller we failed
@@ -230,6 +232,7 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
             /* We got a notification, remove the event registered */
             ret = mk_event_del(u_conn->evl, &u_conn->event);
             if (ret == -1) {
+                flb_debug("net_io_write_async: mk_event_del failed return -1");
                 return -1;
             }
 
@@ -245,16 +248,18 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
 
                     return -1;
                 }
-
+                flb_debug("net_io_write_async: MK_EVENT_WRITE goto retry");
                 MK_EVENT_NEW(&u_conn->event);
                 goto retry;
             }
             else {
+                flb_debug("net_io_write_async: mask & MK_EVENT_WRITE failed return -1");
                 return -1;
             }
 
         }
         else {
+            flb_debug("net_io_write_async: FLB_WOULDBLOCK() failed return -1");
             return -1;
         }
     }
@@ -262,6 +267,7 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
     /* Update counters */
     total += bytes;
     if (total < len) {
+        flb_debug("net_io_write_async Update counters branch total(%zu) bytes(%zu) len(%zu)", total,bytes,len );
         if (u_conn->event.status == MK_EVENT_NONE) {
             u_conn->event.mask = MK_EVENT_EMPTY;
             u_conn->coro = co;
@@ -274,9 +280,11 @@ static FLB_INLINE int net_io_write_async(struct flb_coro *co,
                  * If we failed here there no much that we can do, just
                  * let the caller we failed
                  */
+                flb_debug("net_io_write_async Update counters branch: return -1");
                 return -1;
             }
         }
+        flb_debug("net_io_write_async Update counters branch: goto retry");
         flb_coro_yield(co, MK_FALSE);
         goto retry;
     }
@@ -346,7 +354,7 @@ int flb_io_net_write(struct flb_upstream_conn *u_conn, const void *data,
     struct flb_upstream *u = u_conn->u;
     struct flb_coro *coro = flb_coro_get();
 
-    flb_trace("[io coro=%p] [net_write] trying %zd bytes", coro, len);
+    flb_debug("[io coro=%p] [net_write] trying %zd bytes", coro, len);
 
     if (!u_conn->tls_session) {
         if (u->flags & FLB_IO_ASYNC) {
@@ -373,7 +381,7 @@ int flb_io_net_write(struct flb_upstream_conn *u_conn, const void *data,
         u_conn->event.fd = -1;
     }
 
-    flb_trace("[io coro=%p] [net_write] ret=%i total=%lu/%lu",
+    flb_debug("[io coro=%p] [net_write] ret=%i total=%lu/%lu",
               coro, ret, *out_len, len);
     return ret;
 }
